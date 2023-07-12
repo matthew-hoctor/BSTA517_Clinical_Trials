@@ -1,0 +1,36 @@
+---
+title: "Homework 1 - BSTA 517"
+author: "Matthew Hoctor"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library(dplyr)
+# library(readxl)
+# library(tidyverse)
+# library(ggplot2)
+library(TeachingDemos)    # for hpd() function
+library(HDInterval)       # for hdi() function
+```
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+# References
+
