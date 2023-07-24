@@ -8,6 +8,7 @@
 
 # User-specific files
 .Ruserdata
+BSTA517_Clinical_Trials.Rproj
 
 # Example code in package build process
 *-Ex.R
@@ -47,3 +48,6 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# PDF files for submission & grading
+*.pdf

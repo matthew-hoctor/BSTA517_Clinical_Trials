@@ -1,0 +1,58 @@
+---
+title: "Homework 2 - BSTA 517"
+author: "Matthew Hoctor"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+  pdf_document:
+    toc: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library(dplyr)
+# library(readxl)
+# library(tidyverse)
+# library(ggplot2)
+# library(TeachingDemos)    # for hpd() function
+# library(HDInterval)       # for hdi() function
+```
+
+# Finding Optimal Starting Doses for First-in-Human Phase I Trials
+
+The following is a summary of two documents on the topic of ideal starting doses in first-in-human (phase I) trials:
+
+## FDA Guidance for Industry
+
+ - This document discusses initial doses in healthy volunteers, and not patient volunteers; therefore the guidance in this document doesn't directly apply to many chemotherapeutic and antibody medications, as trials of these medications are often done in patient volunteers,  With this caveat in mind the document can be summarized into the following main points:
+ - FDA describes their algorithm for finding a maximum recommended starting dose (MRSD)
+   1. Find no observed adverse effect levels (NOAELs) in pre-clinical animal studies
+   2. Extrapolate NOAEL(s) to human equivalent dose (HED) if appropriate; otherwise convert NOAEL to HED based on body surface area (BSA)
+   3. Select the HED associated with the most appropriate species
+   4. Pick a safety factor and divide the HED by that factor
+   5. Consider lowering the dose (e.g. based on pharmacologically active dose)
+ - Some interesting caveats are pointed out in the discussion:
+  - Lowest saturating dose (i.e. the lowest dose at which saturation of absorption occurs) should be used when saturation limits observation of adverse effects in a particular animal model
+  - 'Adverse effects' in this context refers to any effect which would not be acceptable for the initial dose of a phase I trial in healthy human volunteers
+  - mg/kg scaling can be considered in place of BSA when NOAELs have a similar mg/kg value across species
+  - alternatives to BSA scaling should also be considered for very high MW drugs, and for drugs which do not distribute systemically (e.g. drugs administered into a specific compartment, topical drugs, etc)
+  - ADME can be considered when selecting the correct species
+  - Safety factors >10 should be considered when known biological differences between humans and the selected species indicate it
+
+## Viala et al. on Doses for Monoclonal Antibodies
+
+ - As the FDA guidance does not directly address starting dose for monoclonal antibodies, and uncertainties of starting dose for FIHTs of highly selective drugs (e.g. MABs), as increasing dose does not produce increasing cytotoxic effect
+ - The researchers systematically reviewed FIHTs of MABs to test correlation between doses in registration trials (RTs) and the recommended phase II dose (RP2D), and test correlation between doses in FIHTs and doses selected for later studies 
+ - Relation between doses selected for later studies and doses used in FIHTs is unclear
+ - Previous research from this group found that MTD is difficult to find for this class of molecules, and that PK/PD was the main determinant of the RP2D
+
+# References
+
+1. Viala M, Vinches M, Alexandre M, et al. Strategies for clinical development of monoclonal antibodies beyond first-in-human trials: tested doses and rationale for dose selection. Br J Cancer. 2018;118(5):679-697. doi:10.1038/bjc.2017.473
+2. Food and Drug Administration. Guidance for industry: estimating the maximum safe starting dose in initial clinical trials for therapeutics in adult healthy volunteers. Center for Drug Evaluation and Research (CDER). 2005;7(0.001).
