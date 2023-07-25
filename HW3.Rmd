@@ -1,0 +1,147 @@
+---
+title: "Homework 3 - BSTA 517"
+author: "Matthew Hoctor"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library(dplyr)
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(ggfortify)          # for ggdistribution function
+# library(TeachingDemos)    # for hpd() function
+# library(HDInterval)       # for hdi() function
+library(rje)                # for expit function
+library(flextable)
+```
+
+# Question 1
+
+If we are given the probility of toxicity, $P$, as:
+
+$$P = \mbox{expit}(\alpha + \beta \cdot D)$$
+
+Where $\alpha = -6.34$, $\beta = 5.25$, and $D$ is the dose.  If we suppose that the target toxicity rate (TTR) is $1/3$, then we can find the maximum tolerated dose, $MTD$, by setting $P = 1/3$, and solving for $D$:
+
+$$
+\begin{split}
+D_{\mbox{max tolerated}} &= \frac{\mbox{logit}(P) - \alpha}{\beta}\\
+&= \frac{\mbox{logit}(1/3) - -6.34}{5.25}\\
+&= 1.076
+\end{split}
+$$
+
+```{r}
+alpha <- -6.34
+beta <- 5.25
+TTR <- 1/3
+func <- function(D){expit(alpha + beta*D)}
+MTD <- (logit(TTR)-alpha)/beta
+MTD
+```
+
+\pagebreak
+
+We can visualize this with the `ggplot` package:
+
+```{r}
+p <- ggdistribution(func = func, 
+               x = seq(0, 3, 0.1),
+               xlab = "Dose of Drug, 'D'",
+               ylab = "Probability of Toxicity, 'P'")
+p + 
+  geom_hline(aes(yintercept = TTR), colour="#990000", linetype="dashed", show.legend = FALSE) + 
+  geom_hline(aes(yintercept = 0), colour="black", linetype="solid", show.legend = FALSE) + 
+  geom_vline(aes(xintercept=MTD, colour="#990000", linetype="dashed", show.legend = FALSE)) +
+  geom_vline(aes(xintercept = 0), colour="black", linetype="solid", show.legend = FALSE) + 
+  annotate(x=MTD,y=+Inf,label="MTD",vjust=2,geom="label") +
+  annotate(x=0,y=TTR,label="TTR",vjust=0,geom="label") +
+  theme(legend.position = "none")
+```
+
+# Question 2
+
+Using Simon's two-stage optimal design, and denoting the 6-month survival proportion, $\pi$: $H_0: \pi = 0.5$.  In stage 1 the trial will enroll $n_1 = 28$ initial patients, and  be terminated early for futility unless $r_1 = 15$ or fewer patients survive to 6 months; in stage 2 $n_2 = 55$ more patients will be enrolled, and further study will be halted if $r= 48$ or fewer patients among $n = 83$ total patients from either stage survived for 6 months.  
+
+## Probability of stopping early at stage 1
+
+With these assumptions, and given the null hypothesis stated above, we can compute the probability of stopping early in stage 1 using the binomial distribution:^1^
+
+$$
+\begin{split}
+\mbox{P} &= \sum_{i=0}^{r_1} \left( \begin{array}{c} n_1 \\ i \end{array} \right) \pi^i (1-\pi)^{(n_1-i)}\\
+\end{split}
+$$
+
+This can be computed as:
+
+```{r}
+pbinom(15, size = 28, prob = 0.5)
+```
+
+The probability of early termination (PET) for a trial of these parameters is 0.71; this is confirmed in Table 2 of the manuscript.
+
+## Expected sample size 
+
+With these assumptions, and given the null hypothesis stated above, we can compute the expected sample size for Simon's two-stage optimal design.  We can estimate the expected sample size as $\mbox{E}(n) = n_1 + (1-\mbox{PET})n_2$ (this follows from the fact that the probability of proceeding to stage 2 and thereby recruiting $n_2$ patients is $1-\mbox{PET}$):
+
+$$
+\begin{split}
+\mbox{E}[n] &= n_1 + (1 - \mbox{PET}) n_2 \\
+&=28 + 55\cdot(1-0.71)\\
+&=43.95
+\end{split}
+$$
+
+Rounding up to the nearest whole participatnt, the expected value of the number of participants in this study is 44.
+
+# Question 3
+
+We can provide a continuous monitoring plan for the above two-stage phase II trial using the [Bayesian Toxicity Monitoring software on trialdesign.org](https://trialdesign.org/one-pageshell.html#BTOX) under the following set of assumptions:
+
+ a. If there is at least a $P_T = 0.75$ posterior probability of DLT, $\theta > 0.25$
+ b. Minimum patients enrolled before stopping early is 3
+
+We can achieve this monitoring plan by setting the parameters in the user interface as $\theta_{max} = 0.25$, keep $a_0 = 0.5$ and $b_0 = 0.5$, max number of patients set to $83$, minimum patients before stopping early set to $3$, cohort size set to $1$, and $P_T = 0.75$.  Exporting the report as an excel file allows us to display the results nicely:
+
+The inputs:
+
+```{r}
+read_xlsx("BTOXv2.2.3.0_StoppingBoundariesReport.2023-07-24.xlsx", 
+          sheet = 1,
+          skip = 4) |>
+  flextable(cwidth = 2)
+```
+
+The Outputs:
+
+```{r}
+read_xlsx("BTOXv2.2.3.0_StoppingBoundariesReport.2023-07-24.xlsx", 
+          sheet = 3,
+          range = "A2:B83") |>
+flextable(cwidth = 1) |>
+  align(align = "left")
+```
+
+# References
+
+1. Simon R. Optimal two-stage designs for phase II clinical trials. Controlled Clinical Trials. 1989;10(1):1-10. doi:10.1016/0197-2456(89)90015-9
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
