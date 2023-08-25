@@ -1,0 +1,136 @@
+---
+title: "Homework 4 - BSTA 517"
+author: "Matthew Hoctor"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  html_document:
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# library(dplyr)
+# library(readxl)
+library(tidyverse)
+# library(ggplot2)
+# library(ggfortify)          # for ggdistribution function
+# library(TeachingDemos)      # for hpd() function
+# library(HDInterval)         # for hdi() function
+# library(rje)                # for expit function
+# library(flextable)
+```
+
+calculate z score by hand; use pt function to get the p-value
+
+# Blinding
+
+Summary of Anand et al.:
+
+ 1. The main thesis of the article: overemphasizing blinding hurts the progression of health science by increasing difficulty of interpretation of unnecessarily blinded trials, increasing cost and complexity of conducting research, and by discouraging use of unblinded datasets and discounting evidence from unblinded trials in review and meta-analysis.
+ 2. Benefits of blinding include ease of identification of placebo effect, avoidance of exaggerated treatment effect, and reduction of co-intervention bias (differential use of non-experimental treatments among groups).
+ 3. Harms of blinding include heightened recruitment/retention challenges, differential loss to followup among those responding to treatment vs those who do not, opportunity costs (record keeping, labeling, and packaging, etc), partial/differential unblinding via patient message groups, emergency unblinding frustrates interpretation of block randomized trials, direct patient harms from no-cebo effects, and difficulty in titrating dose (particularly anticoagulants and antipsychotics).
+ 4. Pragmatic effect of blinding "There is a continuum from explanatory to pragmatic trials, and blinding influences where a trial is on this continuum."
+ 5. Methodologically rigorous alternatives to blinding include blinding of the outcome assessors (as is done in PROBE trial methodology) and use of objective outcomes (or modification of subjective outcomes to make the m more objective); both methods show little evidence of bias.
+
+I think the authors provide a compelling case that blinding can be overdone and can potentially cause harms; however I think they would have a more compelling argument if they provided an estimate of roughly how many trials every hear can be considered 'over-blinded', and what are the associated costs and harms.  I do think that the suggestion of the excellent alternatives to blinding (objective outcomes & PROBE) is a good reminder.  
+
+I also think that the discussion around phase III trials has centered on trials designed for FDA approval of drugs for marketing in the United States.  Trials in this context absolutely require blinding to ensure that companies aren't marketing ineffective medicines, and to protect the safety and health of research participants and patients.  However this article is a good reminder that blinding is not absolutely necessary, and may even be a net harm in other research contexts.
+
+# Randomization
+
+In this phase II trial, $n=40$ patients are randomized using 1:1 complete randomization into group A with $n_A$ patients, and group B with $n_B$ patients.  Imbalance in sample size is defined as $|nA - nB| > 6$.
+
+## Question 1
+
+In this scenario, because we have $n=40$ patients total, and a patient must be assigned to either A or B, the only way for imbalance to occur (i.e. the only way for $|nA - nB| > 6$ to be true) is if $n_A \leq 16$ or if $n_A \geq 24$.  Furthermore because the probability that any  patient is assigned to group A is $1/2$ (i.e. if $X_i =1$ denotes the event that patient $i$ is assigned to group A, then $X_i \sim \mbox{Bernoulli}(p = 1/2)$), then the number of patients assigned to group A is a sum of Bernoulli random variables, and is therefore a binomial random variable (i.e. if $n_A = \sum_{i=1}^{40}X_i$, then $n_A \sim \mbox{Binomial}(n=40, p = 1/2)$).  
+
+Therefore we can find the probability of an imbalanced sample with the following R code:
+
+```{r}
+pbinom(16,size = 40, prob = 0.5) + 1-pbinom(23,size = 40, prob = 0.5, lower.tail = TRUE)
+# x<-0
+# for (i in 1:16) x<-x+dbinom(i ,size = 40, prob = 0.5)
+# for (i in 24:40) x<-x+dbinom(i ,size = 40, prob = 0.5)
+# x
+```
+
+The probability of imbalance exceeds a quarter.  This risk seems unwarranted given the alternatives to 1:1 random allocation, and given that a larger sample size may result in less chance of imbalance (depending on how 'imbalance' is defined).
+
+## Question 2
+
+Several other randomization techniques could mitigate or eliminate the chance of imbalance.  Restricted randomization using an allocation rule or using a truncated binomial design creates even sample sizes and thus eliminates imbalance between groups; however these two schemes have the drawback of of deterministic allocation once $n/2$ patients have been allocated to one of the subgroups (and a potential bias in recruitment if trialists are unblinded).  Restricted randomization using a permuted block design would eliminate imbalance and would also have the advantage of yielding balanced samples for interim analysis.  Stratified randomization may also be an option, if enough is known about the causes of the outcome, and if those causes can be measured at baseline.
+
+# Interim Analysis
+
+## Question 3
+
+In the scenario described, the first interim analysis is reached in which both arms have $n_A = n_B = 90$ patients, and $x_A = 55$ patients were successfully treated in arm A, and $x_B = 36$ patients were successfully treated in arm B (and therefore $\hat{p}_A = 55/90$ and $\hat{p}_B = 36/90$.  Noting that the weighted average probability is $\hat{p} = 1- \hat{q} = (x_A + x_B)/(n_A + n_B) = 91/180$, we can compute the z-statistic as our test statistic for this interim analysis:
+
+$$
+\begin{split}
+z &= \frac{|\hat{p}_A - \hat{p}_B| - ( \frac{1}{2n_A} + \frac{1}{2n_B})}{\sqrt{\hat{p}\hat{q}( \frac{1}{n_A} + \frac{1}{n_B})}}\\
+&= \frac{|55/90 - 36/90| - ( \frac{1}{180} + \frac{1}{180})}{\sqrt{91/180 *89/180( \frac{1}{90} + \frac{1}{90})}}\\
+&= 2.683447
+\end{split}
+$$
+
+The R code for the calculation:
+
+```{r}
+((55/90 - 36/90) - (1/180 + 1/180))/(((91/180)*(89/180)*(2/90))^0.5)
+```
+
+We can test if the normal approximation to the binomial is valid for each sample:
+
+```{r}
+90*(55/90)*(35/90)  #n_A*p_A*q_A 
+90*(36/90)*(54/90)  #n_B*p_B*q_B
+```
+
+Both are greater than or equal to 5, and so the approximation is valid.  The p-value for the above z-statistic can be computed with the `prop.test` function:
+
+```{r}
+result <- prop.test(x = c(55, 36), n = c(90, 90))   
+result$p.value
+abs(qnorm(result$p.value/2))      # report z-value computed manually above
+```
+
+Thus we can use the normal approximation for the binomial distribution (as the designers likely expected), yielding $z = 2.68$, with an associated p-value of $p = 0.0073$; this indicates that the apparent result that treatment arm A is superior to the treatment in arm B is very unlikely to be due to chance.  We can check if this z-value is sufficient to stop the trial at the first interim analysis under different group sequential designs:
+
+## Question 4
+
+If Pocock's sequential design is used, we can consult the table to find the critical value for $K = 4$ analysis points and $\alpha = 0.05$; we find that $C_p = 2.361$, and so $|Z_1| < C_p$, and so we fail to reject $H_0$ at the first interim analysis.  If the trialists decide to use use Pocock's sequential design, they will fail to reject $H_0$ at the first interim analysis, and the trial will continue.
+
+## Question 5
+
+If O’Brien & Fleming’s group sequential design is used, we can again consult the table to find the critical value for $K = 4$ analysis points and $\alpha = 0.05$, and find $C_p = 2.024$; however O’Brien & Fleming’s group sequential design requires multiplying by $\sqrt{K/k} = \sqrt{4/1} = 2$, and so $|Z_1| = 2.68 < 4.048 = C_p*\sqrt{K/k}$, and so we fail to reject $H_0$ at the first interim analysis.  If the trialists decide to use use O’Brien & Fleming’s group sequential design, they will again fail to reject $H_0$ at the first interim analysis, and the trial will continue.
+
+# Futility Stopping
+
+Summary of Chang et al.:
+
+ 1. Futility stopping rules can reduce resource use on unpromising APIs, reduce type-I error rate, and can be flexibly set to optimize various parameters based on the investigators' priorities.
+ 2. The authors propose three philosophical criteria for interim futility stopping: firstly, a trial can stop if conditional power (probability of rejecting $H_0$ given $H_A$ and given the current set of observations) is too low; secondly a trial can stop if a test statistic measuring treatment effect is not significantly different than zero, and thirdly it can stop if a test statistic measuring treatment effect is too low.
+ 3. The first and second of these stopping rules are mathematically equivalent.
+ 4. According to their simulation studies, a three stage trial (i.e. two futility stop points) has similar effects on the power of the study to increasing sample size by ~43%, although there are no closed forms for computing stopping rules for such studies.
+ 5. The authors conclude that rules 1&2 can be used if investigators would like to stop when it's unlikely that any effect will be observed at the end of the trial, whereas rule 3 can be used when investigators would like to stop if a minimum effect size is not observed. 
+
+# References
+
+1. Anand, R, Norrie, J, Bradley, JM, McAuley, DF, Clarke, M. Fool’s gold? Why blinded trials are not always best. BMJ. Published online January 21, 2020:l6228. doi:10.1136/bmj.l6228
+2. Chang Y, Song T, Monaco J, Ivanova A. Futility stopping in clinical trials, optimality and practical considerations. Journal of Biopharmaceutical Statistics. 2020;30(6):1050-1059. doi:10.1080/10543406.2020.1818253
+3. Rosner B. Fundamentals of Biostatistics. 7th edition. Cengage Learning; 2010.
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
