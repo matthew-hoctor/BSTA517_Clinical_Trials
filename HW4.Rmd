@@ -3,16 +3,20 @@ title: "Homework 4 - BSTA 517"
 author: "Matthew Hoctor"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: 3
   html_document:
     number_sections: no
     theme: lumen
     toc: yes
     toc_float:
+      
+      
       collapsed: yes
       smooth_scroll: no
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+bibliography: "`r rbbt::bbt_write_bib('bibliography.bib', overwrite = TRUE)`" 
+csl: american-medical-association.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -20,6 +24,7 @@ knitr::opts_chunk$set(echo = TRUE)
 # library(dplyr)
 # library(readxl)
 library(tidyverse)
+library(rbbt)
 # library(ggplot2)
 # library(ggfortify)          # for ggdistribution function
 # library(TeachingDemos)      # for hpd() function
@@ -28,11 +33,9 @@ library(tidyverse)
 # library(flextable)
 ```
 
-calculate z score by hand; use pt function to get the p-value
-
 # Blinding
 
-Summary of Anand et al.:
+Summary of Anand et al.:@anandFoolGoldWhy2020
 
  1. The main thesis of the article: overemphasizing blinding hurts the progression of health science by increasing difficulty of interpretation of unnecessarily blinded trials, increasing cost and complexity of conducting research, and by discouraging use of unblinded datasets and discounting evidence from unblinded trials in review and meta-analysis.
  2. Benefits of blinding include ease of identification of placebo effect, avoidance of exaggerated treatment effect, and reduction of co-intervention bias (differential use of non-experimental treatments among groups).
@@ -95,7 +98,7 @@ We can test if the normal approximation to the binomial is valid for each sample
 90*(36/90)*(54/90)  #n_B*p_B*q_B
 ```
 
-Both are greater than or equal to 5, and so the approximation is valid.  The p-value for the above z-statistic can be computed with the `prop.test` function:
+Both are greater than or equal to 5, and so the approximation is valid. @rosnerFundamentalsBiostatistics2010  The p-value for the above z-statistic can be computed with the `prop.test` function:
 
 ```{r}
 result <- prop.test(x = c(55, 36), n = c(90, 90))   
@@ -115,7 +118,7 @@ If O’Brien & Fleming’s group sequential design is used, we can again consult
 
 # Futility Stopping
 
-Summary of Chang et al.:
+Summary of Chang et al.:@changFutilityStoppingClinical2020
 
  1. Futility stopping rules can reduce resource use on unpromising APIs, reduce type-I error rate, and can be flexibly set to optimize various parameters based on the investigators' priorities.
  2. The authors propose three philosophical criteria for interim futility stopping: firstly, a trial can stop if conditional power (probability of rejecting $H_0$ given $H_A$ and given the current set of observations) is too low; secondly a trial can stop if a test statistic measuring treatment effect is not significantly different than zero, and thirdly it can stop if a test statistic measuring treatment effect is too low.
@@ -123,14 +126,14 @@ Summary of Chang et al.:
  4. According to their simulation studies, a three stage trial (i.e. two futility stop points) has similar effects on the power of the study to increasing sample size by ~43%, although there are no closed forms for computing stopping rules for such studies.
  5. The authors conclude that rules 1&2 can be used if investigators would like to stop when it's unlikely that any effect will be observed at the end of the trial, whereas rule 3 can be used when investigators would like to stop if a minimum effect size is not observed. 
 
-# References
-
-1. Anand, R, Norrie, J, Bradley, JM, McAuley, DF, Clarke, M. Fool’s gold? Why blinded trials are not always best. BMJ. Published online January 21, 2020:l6228. doi:10.1136/bmj.l6228
-2. Chang Y, Song T, Monaco J, Ivanova A. Futility stopping in clinical trials, optimality and practical considerations. Journal of Biopharmaceutical Statistics. 2020;30(6):1050-1059. doi:10.1080/10543406.2020.1818253
-3. Rosner B. Fundamentals of Biostatistics. 7th edition. Cengage Learning; 2010.
+<!-- 1. Anand, R, Norrie, J, Bradley, JM, McAuley, DF, Clarke, M. Fool’s gold? Why blinded trials are not always best. BMJ. Published online January 21, 2020:l6228. doi:10.1136/bmj.l6228 -->
+<!-- 2. Chang Y, Song T, Monaco J, Ivanova A. Futility stopping in clinical trials, optimality and practical considerations. Journal of Biopharmaceutical Statistics. 2020;30(6):1050-1059. doi:10.1080/10543406.2020.1818253 -->
+<!-- 3. Rosner B. Fundamentals of Biostatistics. 7th edition. Cengage Learning; 2010. -->
 
 # Session Info
 
 ```{r}
 sessionInfo()
 ```
+
+# References
